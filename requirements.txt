@@ -1,0 +1,9 @@
+
+fastapi[standard]
+pymongo
+motor
+pydantic
+python-dotenv
+pyjwt
+bcrypt
+cloudinary
