@@ -25,11 +25,12 @@ class LoginModel(BaseModel):
 
 # JWT helper
 def create_jwt(user_id: str) -> str:
+    secret_key = os.getenv("JWT_SECRET_KEY", "default-secret-key-change-in-production")
     payload = {
         "id": user_id,
         "exp": datetime.utcnow() + timedelta(hours=24)
     }
-    token = jwt.encode(payload, os.getenv("JWT_SECRET_KEY"), algorithm="HS256")
+    token = jwt.encode(payload, secret_key, algorithm="HS256")
     return token
 
 # Authentication dependency
@@ -37,7 +38,8 @@ async def authenticated_user(
     auth: HTTPAuthorizationCredentials = Depends(security)
 ):
     try:
-        payload = jwt.decode(auth.credentials, os.getenv("JWT_SECRET_KEY"), algorithms=["HS256"])
+        secret_key = os.getenv("JWT_SECRET_KEY", "default-secret-key-change-in-production")
+        payload = jwt.decode(auth.credentials, secret_key, algorithms=["HS256"])
         user_id = payload["id"]
         user = await users_collection.find_one({"_id": ObjectId(user_id)})
         if not user:

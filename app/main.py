@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import users, services, bookings, reviews, payments
+from app.routes import users, services, bookings, reviews, payments, providers
 
 app = FastAPI(title="HomeSolutions API")
 
@@ -17,3 +17,4 @@ app.include_router(services.router, prefix="/api/services", tags=["Services"])
 app.include_router(bookings.router, prefix="/api/bookings", tags=["Bookings"])
 app.include_router(reviews.router, prefix="/api/reviews", tags=["Reviews"])
 app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
+app.include_router(providers.router, prefix="/api/providers", tags=["Providers"])

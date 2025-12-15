@@ -18,7 +18,7 @@ class ReviewCreateModel(BaseModel):
     comment: str
 
 # Create review (homeowner only)
-@router.post("/", dependencies=[Depends(lambda: has_roles(["homeowner"]))])
+@router.post("/", dependencies=[Depends(has_roles(["homeowner"]))])
 async def create_review(review: ReviewCreateModel, user=Depends(authenticated_user)):
     provider = await users_collection.find_one({"_id": ObjectId(review.provider_id), "role": "provider"})
     if not provider:
@@ -33,7 +33,7 @@ async def create_review(review: ReviewCreateModel, user=Depends(authenticated_us
     return replace_mongo_id(doc)
 
 # Provider: view own reviews
-@router.get("/my-reviews", dependencies=[Depends(lambda: has_roles(["provider"]))])
+@router.get("/my-reviews", dependencies=[Depends(has_roles(["provider"]))])
 async def get_my_reviews(user=Depends(authenticated_user)):
     reviews = await reviews_collection.find({"provider_id": user["id"]}).to_list(length=100)
     return replace_mongo_id(reviews)

@@ -18,10 +18,10 @@ class ServiceCreateModel(BaseModel):
     price: float = Field(..., gt=0)
 
 class ServiceUpdateModel(BaseModel):
-    name: Optional[str]
-    category: Optional[str]
-    description: Optional[str]
-    price: Optional[float]
+    name: Optional[str] = None
+    category: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[float] = None
 
 # Admin: create service
 @router.post("/", dependencies=[Depends(has_roles(["admin"]))])
@@ -38,13 +38,24 @@ async def get_services():
     services = await services_collection.find({}).to_list(length=100)
     return replace_mongo_id(services)
 
+# Get services by category
+@router.get("/category/{category}", response_model=List[dict])
+async def get_services_by_category(category: str):
+    services = await services_collection.find({"category": category}).to_list(length=100)
+    return replace_mongo_id(services)
+
 # Get single service
 @router.get("/{service_id}")
 async def get_service(service_id: str):
-    service = await services_collection.find_one({"_id": ObjectId(service_id)})
-    if not service:
-        raise HTTPException(status_code=404, detail="Service not found")
-    return replace_mongo_id(service)
+    try:
+        service = await services_collection.find_one({"_id": ObjectId(service_id)})
+        if not service:
+            raise HTTPException(status_code=404, detail="Service not found")
+        return replace_mongo_id(service)
+    except Exception as e:
+        if "not a valid ObjectId" in str(e):
+            raise HTTPException(status_code=400, detail="Invalid service ID")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Admin: update service
 @router.put("/{service_id}", dependencies=[Depends(has_roles(["admin"]))])

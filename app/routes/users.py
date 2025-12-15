@@ -40,12 +40,13 @@ class UserLoginModel(BaseModel):
 # JWT helper
 # ----------------------------
 def create_jwt(user_id: str, role: str) -> str:
+    secret_key = os.getenv("JWT_SECRET_KEY", "default-secret-key-change-in-production")
     payload = {
         "id": user_id,
         "role": role,
         "exp": datetime.utcnow() + timedelta(hours=24)  # token valid for 24h
     }
-    token = jwt.encode(payload, os.getenv("JWT_SECRET_KEY"), algorithm="HS256")
+    token = jwt.encode(payload, secret_key, algorithm="HS256")
     return token
 
 # ----------------------------
@@ -63,8 +64,18 @@ async def register(user: UserRegisterModel):
     user_dict["created_at"] = datetime.utcnow()
 
     result = await users_collection.insert_one(user_dict)
-    user_dict["id"] = str(result.inserted_id)
-    return replace_mongo_id(user_dict)
+    user_id = str(result.inserted_id)
+    user_dict["id"] = user_id
+    
+    # Create JWT token and return it (auto-login after registration)
+    token = create_jwt(user_id, user.role)
+    user_data = replace_mongo_id(user_dict)
+    
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": user_data
+    }
 
 # ----------------------------
 # User login
