@@ -10,8 +10,7 @@ load_dotenv()
 
 # MongoDB connection URL
 MONGO_URL = os.getenv(
-    "MONGO_URL",
-    "mongodb+srv://homesolutions:home_solutions@grow-cohort6.nlxoztk.mongodb.net/"
+    "MONGO_URL"
 )
 
 # Create async MongoDB client
